@@ -6,5 +6,5 @@ set(CMAKE_CXX_STANDARD 11)
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIRS})
 
-add_executable(chippi8 chippi.cpp)
+add_executable(chippi8 src/main.cpp)
 target_link_libraries(chippi8 ${SDL2_LIBRARIES})
