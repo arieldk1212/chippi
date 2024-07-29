@@ -1,0 +1,11 @@
+8 bits per memory location (chip8)
+
+chip 8 uses 512 bytes of memory space (starting at 0x200) -> 512*8=4096
+
+most of the bytes that are above 512 are for display refresh, call stack, internal use and other variables.
+
+16 registers of 1 byte total.
+
+input is with hex keyboard -> 16 keys 0 to F.
+
+64x32, monochrome.
