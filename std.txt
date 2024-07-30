@@ -9,3 +9,23 @@ most of the bytes that are above 512 are for display refresh, call stack, intern
 input is with hex keyboard -> 16 keys 0 to F.
 
 64x32, monochrome.
+
+UI > X ROM FILE
+     X Emulation Speed
+     X Pause/Resume
+     X RESET
+     X FRAMERATE
+     X Registers Stack
+
+
+HELPERS -> 
+  1. Initialize display, sound and cpu (registers and memory).
+  2. Handle any events (window, keyboard).
+  3. Fetch the instruction at PC (points 0x200 at start).
+  4. Decode the instruction. Update PC.
+  5. If DT > 0, then DT = DT - 1.
+  6. If ST > 0, then output a tone, ST = ST - 1.
+  7. Update display at 60FPS.
+  8. Repeat Steps 2 to 7 (the emulation loop)
+
+add imGui for the gui itself and further functions.

@@ -1,6 +1,9 @@
 #include <iostream>
 #include <SDL2/SDL.h>
-
+#include <SDL2/SDL_opengl.h>
+#include <GL/glu.h>
+#include <string.h>
+#include <imgui/imgui.h>
 
 const int WIDTH = 640;
 const int HEIGHT = 480;
