@@ -4,15 +4,13 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 
-#define EXT_WINDOW_ERROR 0
+Uint32 flags = SDL_WINDOW_OPENGL | SDL_RENDERER_ACCELERATED | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
 
-Uint32 flags = SDL_WINDOW_OPENGL | SDL_RENDERER_ACCELERATED;
+void createWindow(SDL_Window **window, char *title, const int WIDTH, const int HEIGHT, Uint32 flags) {
 
-// SDL Window
-void createWindow(SDL_Window **window, char *title, const int HEIGHT, const int WIDTH, Uint32 flags) {
-
-  bool quit = false;
-  SDL_Event e;
+  if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0) {
+    std::cerr << "Error: " << SDL_GetError() << "\n.";
+  };
 
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
@@ -22,16 +20,7 @@ void createWindow(SDL_Window **window, char *title, const int HEIGHT, const int 
   SDL_DisplayMode current;
   SDL_GetCurrentDisplayMode(0, &current);  
 
-  *window = SDL_CreateWindow("Chippi-8", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, HEIGHT, WIDTH, flags);
-  while (!quit) {
-    if (*window == NULL) {
-      std::cerr << "Window Could Not Be Created - " << SDL_GetError() << "\n";
-      exit(EXT_WINDOW_ERROR); };
-
-    while (SDL_PollEvent (&e) != 0) {
-      if (e.type == SDL_QUIT) {
-        quit = true;}}
-  }
+  *window = SDL_CreateWindow("Chippi-8", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIDTH, HEIGHT, flags);
 }
 
 #endif

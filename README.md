@@ -2,6 +2,7 @@
 minimalist, basic Chip8 emulator for educational purposes.
 
 make sure to mkdir lib and add there all the submodules. git submodule init -> git submodule update.
+(git submodule add X)
 
 to run -> 
 1. mkdir build
