@@ -17,8 +17,7 @@ set(SOURCES
     ${IMGUI_LIBRARIES}/imgui_tables.cpp
     ${IMGUI_LIBRARIES}/imgui_widgets.cpp
     ${IMGUI_BACKENDS}/imgui_impl_sdl2.cpp
-    ${IMGUI_BACKENDS}/imgui_impl_opengl2.cpp
-)
+    ${IMGUI_BACKENDS}/imgui_impl_opengl2.cpp)
 
 include_directories(${SDL2_INCLUDE_DIRS} ${IMGUI_LIBRARIES} ${IMGUI_BACKENDS})
 
