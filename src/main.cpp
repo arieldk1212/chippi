@@ -1,5 +1,5 @@
-#include "display/sdl.h"
 #include "imgui.h"
+#include "display/sdl.h"
 #include "backends/imgui_impl_sdl2.h"
 #include "backends/imgui_impl_opengl2.h"
 
@@ -11,37 +11,42 @@ const int HEIGHT = 480;
 // Flags for The Screen -> in display.h
 extern Uint32 flags;
 
-int main () {
-
-  bool done = false;
+int main() {
 
   // SDL Basic Setup 
   SDL_Window *window;
   createWindow(&window, title, WIDTH, HEIGHT, flags);
   SDL_GLContext gl_context = SDL_GL_CreateContext(window);
   SDL_GL_MakeCurrent(window, gl_context);
-  SDL_GL_SetSwapInterval(1); //vsync
+  SDL_GL_SetSwapInterval(1); //vsync - on
 
-  // ImGui Basic Setup
+  // // ImGui Basic Setup
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
-  ImGuiIO &io = ImGui::GetIO();
-  (void)io;
+  ImGuiIO &io = ImGui::GetIO(); (void)io;
+  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
   ImGui::StyleColorsDark();
   ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
   ImGui_ImplOpenGL2_Init();
 
   // Main Loop
+  bool done = false;
   while(!done) {
-    SDL_Event e;
 
+    SDL_Event e;
     while(SDL_PollEvent(&e)) {
       ImGui_ImplSDL2_ProcessEvent(&e);
       if (e.type == SDL_QUIT)
         done = true;
-      if (e.type == SDL_WINDOWEVENT && e.window.event == SDL_WINDOWEVENT_CLOSE && e.window.windowID == SDL_GetWindowID(window))
+      if (e.type == SDL_WINDOWEVENT && e.window.event == SDL_WINDOWEVENT_CLOSE && 
+          e.window.windowID == SDL_GetWindowID(window))
         done = true;
     }
+
+    ImGui_ImplOpenGL2_NewFrame();
+    ImGui_ImplSDL2_NewFrame();
+    ImGui::NewFrame();
+
   }
 
   // ImGui Cleaning
@@ -53,5 +58,6 @@ int main () {
   SDL_GL_DeleteContext(gl_context);
   SDL_DestroyWindow(window);
   SDL_Quit();
+
   return 0;
 }

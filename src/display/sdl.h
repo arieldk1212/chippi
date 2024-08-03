@@ -2,14 +2,14 @@
 #define SDL_H
 
 #include <iostream>
-#include <SDL2/SDL.h>
+#include "SDL2/SDL.h"
 
-Uint32 flags = SDL_WINDOW_OPENGL | SDL_RENDERER_ACCELERATED | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
+Uint32 flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
 
 void createWindow(SDL_Window **window, char *title, const int WIDTH, const int HEIGHT, Uint32 flags) {
 
   if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0) {
-    std::cerr << "Error: " << SDL_GetError() << "\n.";
+    std::cout << "Error: " << SDL_GetError() << "\n.";
   };
 
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
