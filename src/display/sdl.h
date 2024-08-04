@@ -3,10 +3,11 @@
 
 #include <iostream>
 #include "SDL2/SDL.h"
+#include <SDL2/SDL_opengl.h>
 
 Uint32 flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
 
-void createWindow(SDL_Window **window, char *title, const int WIDTH, const int HEIGHT, Uint32 flags) {
+void createWindow(SDL_Window **window, const int WIDTH, const int HEIGHT, Uint32 flags) {
 
   if (SDL_Init(SDL_INIT_AUDIO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0) {
     std::cout << "Error: " << SDL_GetError() << "\n.";

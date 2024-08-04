@@ -1,21 +1,20 @@
 #include "imgui.h"
 #include "display/sdl.h"
-#include "backends/imgui_impl_sdl2.h"
-#include "backends/imgui_impl_opengl2.h"
+#include "imgui_impl_sdl2.h"
+#include "imgui_impl_opengl2.h"
 
 // Screen Settings
-char *title = "Chippi";
 const int WIDTH = 500;
 const int HEIGHT = 480;
 
 // Flags for The Screen -> in display.h
 extern Uint32 flags;
 
-int main() {
+int main(){
 
   // SDL Basic Setup 
   SDL_Window *window;
-  createWindow(&window, title, WIDTH, HEIGHT, flags);
+  createWindow(&window, WIDTH, HEIGHT, flags);
   SDL_GLContext gl_context = SDL_GL_CreateContext(window);
   SDL_GL_MakeCurrent(window, gl_context);
   SDL_GL_SetSwapInterval(1); //vsync - on
@@ -47,6 +46,8 @@ int main() {
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
 
+    ImGui::Render();
+    ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
   }
 
   // ImGui Cleaning
