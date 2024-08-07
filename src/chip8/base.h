@@ -39,6 +39,6 @@ public:
 
   uint8_t DT;
   uint8_t ST; 
-}
+};
 
-#endif BASE_H
+#endif
