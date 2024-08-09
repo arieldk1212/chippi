@@ -29,3 +29,8 @@ HELPERS ->
   8. Repeat Steps 2 to 7 (the emulation loop)
 
 add imGui for the gui itself and further functions.
+
+**********************************************
+
+sound.* ->  for all the sounds configuratrions
+base.* -> for all the mem and booting configuratrions

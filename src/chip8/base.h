@@ -38,7 +38,19 @@ public:
   int16_t SP; // stack pointer -> tompost level of the stack.
 
   uint8_t DT;
-  uint8_t ST; 
+  uint8_t ST;
+
+  const int16_t ROMTOP = 512;
+
+  uint8_t key_pressed;
+
+  uint32_t* display;
+
+  Chip8();
+  ~Chip8();
+
+  // executes one instruction and updates the chip's state
+  void step();
 };
 
 #endif
