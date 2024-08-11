@@ -41,6 +41,7 @@ int main(){
           e.window.windowID == SDL_GetWindowID(window))
         done = true;
     }
+    
 
     ImGui_ImplOpenGL2_NewFrame();
     ImGui_ImplSDL2_NewFrame();
