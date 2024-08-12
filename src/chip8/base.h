@@ -56,6 +56,7 @@ public:
   std::uniform_int_distribution<uint8_t> rand_byte;
 
   void load_rom(const char* filename);
+  void cycle();
 
   // instructions
   void INS_00E0(); // CLS
