@@ -10,6 +10,8 @@
 const unsigned int START_ADDRESS = 0x200;
 const unsigned int FONT_START_ADDRESS = 0x50;
 const unsigned int FONT_SIZE = 80;
+const unsigned int DISPLAY_WIDTH = 64;
+const unsigned int DISPLAY_HEIGHT = 32;
 
 class Chip8 {
 
@@ -20,17 +22,16 @@ public:
   uint8_t memory[4096];
   uint8_t DT; // delay timer
   uint8_t ST; // soudn timer
-  uint8_t key_pressed;
+  uint8_t key_pad[16];
 
-  int16_t I; // used so store addresses, most of the lower 12 buts are used..
-  // Not accessable from chip8 progams..
+  int16_t I; // used so store addresses, most of the lower 12 bits are used..
   int16_t PC; // program counter -> store the currently executing address
   int16_t SP; // stack pointer -> tompost level of the stack.
   int16_t stack[16];
   const int16_t ROMTOP = 512;
   uint16_t opcode;
 
-  uint32_t display[64 * 32];
+  uint32_t display[DISPLAY_WIDTH * DISPLAY_HEIGHT];
 
   const uint8_t fonts[FONT_SIZE] = {
     0xF0, 0x90, 0x90, 0x90, 0xF0, // -> 0
@@ -51,8 +52,8 @@ public:
     0xF0, 0x80, 0xF0, 0x80, 0x80, // -> F
     };
 
-  std::default_random_engine randGen;
-  std::uniform_int_distribution<uint8_t> randByte;
+  std::default_random_engine rand_gen;
+  std::uniform_int_distribution<uint8_t> rand_byte;
 
   void load_rom(const char* filename);
 

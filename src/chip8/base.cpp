@@ -23,7 +23,7 @@ void Chip8::load_rom(const char* filename) {
 }
 
 Chip8::Chip8()
-  : randGen(std::chrono::system_clock::now().time_since_epoch().count()) {
+  : rand_gen(std::chrono::system_clock::now().time_since_epoch().count()) {
 
   PC = START_ADDRESS;
 
@@ -31,7 +31,7 @@ Chip8::Chip8()
     memory[FONT_START_ADDRESS + i] = fonts[i];
   }
 
-  randByte = std::uniform_int_distribution<uint8_t>(0, 255U);
+  rand_byte = std::uniform_int_distribution<uint8_t>(0, 255U);
 }
 
 Chip8::INS_00E0() {
@@ -187,9 +187,140 @@ Chip8::INS_Bnnn() {
 Chip8::INS_Cxxx() {
   uint8_t Vx = (opcode & 0x0F00u) >> 8u;
   uint8_t byte = opcode & 0x00FFu;
-  V[Vx] = randByte(randGen) & byte;
+  V[Vx] = rand_byte(rand_gen) & byte;
 }
 
 Chip8::INS_Dxyn() {
-  return 0;
+  uint8_t Vx = (opcode & 0x0F00u) >> 8u; // Vx = 2
+  uint8_t Vy = (opcode & 0x00F0u) >> 4u; // Vy = 3
+  uint8_t h = opcode & 0x000Fu; // h = 4
+
+  uint8_t x = V[Vx] % 64;
+  uint8_t y = V[Vy] % 32;
+
+  V[0xF] = 0;
+
+  for (unsigned int row = 0; row < h; ++row) {
+    uint8_t sprite_byte = memory[I + row];
+
+    for (unsigned int col = 0; col < 8; ++col) { // one sprite is  bits
+      uint8_t sprite_pixel = sprite_byte & (0x80u >> col); // shifts to most sig bit by the size of col
+      uint32_t* display_pixel = &display[(y + row) * DISPLAY_WIDTH + (x + col)]; // gives coordinates.
+      if (sprite_pixel) {
+        if (*display_pixel == 0xFFFFFFFF) { // checking if thers already a col of pixels, to avoid collision
+          V[0xF] = 1;
+        }
+        *display_pixel ^= 0xFFFFFFFF; // simplay XORing the result.
+      }
+    }
+  }
+}
+
+Chip8::INS_Ex9E() {
+  uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+  uint8t key = V[Vx];
+  if (key_pad[key]) {
+    PC += 2;
+  }
+}
+
+Chip8::INS_ExA1() {
+  uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+  uint8_t key = V[Vx];
+  if (!key_pad[key]) {
+    PC += 2;
+  }
+}
+
+Chip8::INS_Fx07() {
+  uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+  V[Vx] = DT;
+}
+
+Chip8::INS_Fx0A() {
+  uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+
+  if (key_pad[0]) {
+    V[Vx] = 0;
+  } else if (key_pad[1]) {
+    V[Vx] = 1;
+  } else if (key_pad[2]) {
+    V[Vx] = 2;
+  } else if (key_pad[3]) {
+    V[Vx] = 3;
+  } else if (key_pad[4]) {
+    V[Vx] = 4;
+  } else if (key_pad[5]) {
+    V[Vx] = 5;
+  } else if (key_pad[6]) {
+    V[Vx] = 6;
+  } else if (key_pad[7]) {
+    V[Vx] = 7;
+  } else if (key_pad[8]) {
+    V[Vx] = 8;
+  } else if (key_pad[9]) {
+    V[Vx] = 9;
+  } else if (key_pad[10]) {
+    V[Vx] = 10;
+  } else if (key_pad[11]) {
+    V[Vx] = 11;
+  } else if (key_pad[12]) {
+    V[Vx] = 12;
+  } else if (key_pad[13]) {
+    V[Vx] = 13;
+  } else if (key_pad[14]) {
+    V[Vx] = 14;
+  } else if (key_pad[15]) {
+    V[Vx] = 15;
+  } else {
+    PC -= 2;
+  }
+}
+
+Chip8::INS_Fx15() {
+  uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+  DT = V[Vx];
+}
+
+Chip8::INS_Fx18() {
+  uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+  ST = V[Vx];
+}
+
+Chip8::INS_Fx1E() {
+  uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+  I += V[Vx];
+}
+
+Chip8::INS_Fx29() {
+  uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+  uint8_t digit = V[Vx];
+  I = FONT_START_ADDRESS + (5 * digit);
+}
+
+Chip8::INS_Fx33() {
+  uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+  uint8_t value = V[Vx];
+
+  memory[I + 2] = value % 10;
+  value /= 10;
+
+  memory[I + 1] = value % 10;
+  value /= 10;
+
+  memory[I] = value % 10;
+}
+
+Chip8::INS_Fx55() {
+  uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+  for (uint8_t i = 0; i <= Vx; ++i) {
+    memory[I +i] = V[i];
+  }
+}
+
+Chip8::INS_Fx65() {
+  uint8_t Vx = (opcode & 0x0F00u) >> 8u;
+  for (uint8_t i = 0; i <= Vx; ++i) {
+    V[i] = memory[I +i];
+  }
 }
