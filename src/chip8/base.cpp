@@ -27,29 +27,114 @@ Chip8::Chip8()
 
   PC = START_ADDRESS;
 
+  // we generally use the ++i and not i++ when we dont need to use the variable i in the loop before the incrementation
+  // ++i -> potentional efficiency and clarity.
+  // i++ -> when you NEED the value of i before it increments. 
   for (unsigned int i = 0; i < FONT_SIZE; ++i){
     memory[FONT_START_ADDRESS + i] = fonts[i];
   }
 
   rand_byte = std::uniform_int_distribution<uint8_t>(0, 255U);
+
+  table[0x0] = &Chip8::table0;
+  table[0x1] = &Chip8::INS_1nnn;
+  table[0x2] = &Chip8::INS_2nnn;
+  table[0x3] = &Chip8::INS_3xkk;
+  table[0x4] = &Chip8::INS_4xkk;
+  table[0x5] = &Chip8::INS_5xy0;
+  table[0x6] = &Chip8::INS_6xkk;
+  table[0x7] = &Chip8::INS_7xkk;
+  table[0x8] = &Chip8::table8;
+  table[0x9] = &Chip8::INS_9xy0;
+  table[0xA] = &Chip8::INS_Annn;
+  table[0xB] = &Chip8::INS_Bnnn;
+  table[0xC] = &Chip8::INS_Cxxx;
+  table[0xD] = &Chip8::INS_Dxyn;
+  table[0xE] = &Chip8::tablee;
+  table[0xF] = &Chip8::tablef;
+
+  for (size_t i = 0; i < 0xE; i++) {
+    table0[i] = &Chip8::INS_NULL;
+    table8[i] = &Chip8::INS_NULL;
+    tablee[i] = &Chip8::INS_NULL;
+  }
+
+  table0[0x0] = &Chip8::INS_00E0;
+	table0[0xE] = &Chip8::INS_00EE;
+
+	table8[0x0] = &Chip8::INS_8xy0;
+	table8[0x1] = &Chip8::INS_8xy1;
+	table8[0x2] = &Chip8::INS_8xy2;
+	table8[0x3] = &Chip8::INS_8xy3;
+	table8[0x4] = &Chip8::INS_8xy4;
+	table8[0x5] = &Chip8::INS_8xy5;
+	table8[0x6] = &Chip8::INS_8xy6;
+	table8[0x7] = &Chip8::INS_8xy7;
+	table8[0xE] = &Chip8::INS_8xyE;
+
+	tablee[0x1] = &Chip8::INS_ExA1;
+	tablee[0xE] = &Chip8::INS_Ex9E;
+
+	for (size_t i = 0; i <= 0x65; i++)
+	{
+		tablef[i] = &Chip8::INS_NULL;
+	}
+
+	tablef[0x07] = &Chip8::INS_Fx07;
+	tablef[0x0A] = &Chip8::INS_Fx0A;
+	tablef[0x15] = &Chip8::INS_Fx15;
+	tablef[0x18] = &Chip8::INS_Fx18;
+	tablef[0x1E] = &Chip8::INS_Fx1E;
+	tablef[0x29] = &Chip8::INS_Fx29;
+	tablef[0x33] = &Chip8::INS_Fx33;
+	tablef[0x55] = &Chip8::INS_Fx55;
+	tablef[0x65] = &Chip8::INS_Fx65;
 }
 
-Chip8::INS_00E0() {
+void Chip8::cycle() {
+  opcode = (memory[PC] << 8u) | memory[PC + 1];
+  PC += 2;
+  ((*this).*(table[(opcode & 0xF000u) >> 12u]))();
+  if (DT > 0) {
+    --DT;
+  }
+  if (ST > 0) {
+    --ST;
+  }
+}
+
+void Chip8::table0() {
+  ((*this).*(table0[opcode & 0x000Fu]))();
+}
+
+void Chip8::table8() {
+  ((*this).*(table8[opcode & 0x000Fu]))();
+}
+void Chip8::tablee() {
+  ((*this).*(tablee[opcode & 0x000Fu]))();
+}
+void Chip8::tablef() {
+  ((*this).*(tablef[opcode & 0x00FFu]))();
+}
+
+void Chip8::INS_NULL() {};
+
+void Chip8::INS_00E0() {
   memset(display, 0, sizeof(display));
 }
 
-Chip8::INS_00EE() {
+void Chip8::INS_00EE() {
   --SP;
   PC = stack[SP];
 }
 
 // u declares its an unsigned integer
-Chip8::INS_1nnn() {
+void Chip8::INS_1nnn() {
   uint16_t address = opcode & 0x0FFFu;
   PC = address;
 }
 
-Chip8::INS_2nnn() {
+void Chip8::INS_2nnn() {
   uint16_t address = opcode & 0x0FFFu;
   stack[SP] = PC;
   ++SP;
@@ -60,7 +145,7 @@ Chip8::INS_2nnn() {
 // opcode = 0x1234
 // every Vx refers to a different Vx register 0-F
 // byte holds the keywork kk
-Chip8::INS_3xkk() {
+void Chip8::INS_3xkk() {
   uint8_t Vx = (opcode & 0x0F00u) >> 8u;
   uint8_t byte = opcode & 0x00FFu;
   if (V[Vx] == byte) {
@@ -68,7 +153,7 @@ Chip8::INS_3xkk() {
   }
 }
 
-Chip8::INS_4xkk() {
+void Chip8::INS_4xkk() {
   uint8_t Vx = (opcode & 0x0F00u) >> 8u;
   uint8_t byte = opcode & 0x00FFu;
   if (V[Vx] != byte) {
@@ -76,7 +161,7 @@ Chip8::INS_4xkk() {
   }
 }
 
-Chip8::INS_5xy0() {
+void Chip8::INS_5xy0() {
   uint8_t Vx = (opcode & 0x0F00u) >> 8u;
   uint8_t Vy = (opcode & 0x00F0u) >> 4u;
   if (V[Vx] == V[Vy]) {
@@ -84,43 +169,43 @@ Chip8::INS_5xy0() {
   }
 }
 
-Chip8::INS_6xkk() {
+void Chip8::INS_6xkk() {
   uint8_t Vx = (opcode & 0x0F00u) >> 8u;
   uint8_t byte = opcode & 0x00F0u;
   V[Vx] = byte;
 }
 
-Chip8::INS_7xkk() {
+void Chip8::INS_7xkk() {
   uint8_t Vx = (opcode & 0x0F00u) >> 8u;
   uint8_t byte = opcode & 0x00F0u;
   V[Vx] += byte;
 }
 
-Chip8::INS_8xy0() {
+void Chip8::INS_8xy0() {
   uint8_t Vx = (opcode & 0x0F00u) >> 8u;
   uint8_t Vy = (opcode & 0x00F0u) >> 4u;
   V[Vx] = V[Vy];
 }
 
-Chip8::INS_8xy1() {
+void Chip8::INS_8xy1() {
   uint8_t Vx = (opcode & 0x0F00u) >> 8u;
   uint8_t Vy = (opcode & 0x00F0u) >> 4u;
   V[Vx] != V[Vy];
 }
 
-Chip8::INS_8xy2() {
+void Chip8::INS_8xy2() {
   uint8_t Vx = (opcode & 0x0F00u) >> 8u;
   uint8_t Vy = (opcode & 0x00F0u) >> 4u;
   V[Vx] &= V[Vy];
 }
 
-Chip8::INS_8xy3() {
+void Chip8::INS_8xy3() {
   uint8_t Vx = (opcode & 0x0F00u) >> 8u;
   uint8_t Vy = (opcode & 0x00F0u) >> 4u;
   V[Vx] ^= V[Vy];
 }
 
-Chip8::INS_8xy4() {
+void Chip8::INS_8xy4() {
   uint8_t Vx = (opcode & 0x0F00u) >> 8u;
   uint8_t Vy = (opcode & 0x00F0u) >> 4u;
   uint16_t sum = V[Vx] + V[Vy];
@@ -132,7 +217,7 @@ Chip8::INS_8xy4() {
   V[Vx] = sum & 0xFFu;
 }
 
-Chip8::INS_8xy5() {
+void Chip8::INS_8xy5() {
   uint8_t Vx = (opcode & 0x0F00u) >> 8u;
   uint8_t Vy = (opcode & 0x00F0u) >> 4u;
   if (V[Vx] > V[Vy]) {
@@ -143,13 +228,13 @@ Chip8::INS_8xy5() {
   V[Vx] -= V[Vy];
 }
 
-Chip8::INS_8xy6() {
+void Chip8::INS_8xy6() {
   uint8_t Vx = (opcode & 0x0F00u) >> 8u;
   V[0xF] = (V[Vx] & 0x1u);
   V[Vx] >>= 1;
 }
 
-Chip8::INS_8xy7() {
+void Chip8::INS_8xy7() {
   uint8_t Vx = (opcode & 0x0F00u) >> 8u;
   uint8_t Vy = (opcode & 0x00F0u) >> 4u;
   if (V[Vy] > V[Vx]) {
@@ -160,13 +245,13 @@ Chip8::INS_8xy7() {
   V[Vx] = V[Vy] - V[Vx];
 }
 
-Chip8::INS_8xyE() {
+void Chip8::INS_8xyE() {
   uint8_t Vx = (opcode & 0x0F00u) >> 8u;
   V[0xF] = (V[Vx] & 0x80u) >> 7u;
   V[Vx] <<= 1;
 }
 
-Chip8::INS_9xy0() {
+void Chip8::INS_9xy0() {
   uint8_t Vx = (opcode & 0x0F00u) >> 8u;
   uint8_t Vy = (opcode & 0x00F0u) >> 4u;
   if (V[Vx] != V[Vy]) {
@@ -174,23 +259,23 @@ Chip8::INS_9xy0() {
   }
 }
 
-Chip8::INS_Annn() {
+void Chip8::INS_Annn() {
   uint16_t address = opcode & 0x0FFFu;
   I = address;
 }
 
-Chip8::INS_Bnnn() {
+void Chip8::INS_Bnnn() {
   uint16_t address = opcode & 0x0FFFu
   PC = v[0] + address;
 }
 
-Chip8::INS_Cxxx() {
+void Chip8::INS_Cxxx() {
   uint8_t Vx = (opcode & 0x0F00u) >> 8u;
   uint8_t byte = opcode & 0x00FFu;
   V[Vx] = rand_byte(rand_gen) & byte;
 }
 
-Chip8::INS_Dxyn() {
+void Chip8::INS_Dxyn() {
   uint8_t Vx = (opcode & 0x0F00u) >> 8u; // Vx = 2
   uint8_t Vy = (opcode & 0x00F0u) >> 4u; // Vy = 3
   uint8_t h = opcode & 0x000Fu; // h = 4
@@ -216,7 +301,7 @@ Chip8::INS_Dxyn() {
   }
 }
 
-Chip8::INS_Ex9E() {
+void Chip8::INS_Ex9E() {
   uint8_t Vx = (opcode & 0x0F00u) >> 8u;
   uint8t key = V[Vx];
   if (key_pad[key]) {
@@ -224,7 +309,7 @@ Chip8::INS_Ex9E() {
   }
 }
 
-Chip8::INS_ExA1() {
+void Chip8::INS_ExA1() {
   uint8_t Vx = (opcode & 0x0F00u) >> 8u;
   uint8_t key = V[Vx];
   if (!key_pad[key]) {
@@ -232,12 +317,12 @@ Chip8::INS_ExA1() {
   }
 }
 
-Chip8::INS_Fx07() {
+void Chip8::INS_Fx07() {
   uint8_t Vx = (opcode & 0x0F00u) >> 8u;
   V[Vx] = DT;
 }
 
-Chip8::INS_Fx0A() {
+void Chip8::INS_Fx0A() {
   uint8_t Vx = (opcode & 0x0F00u) >> 8u;
 
   if (key_pad[0]) {
@@ -277,28 +362,28 @@ Chip8::INS_Fx0A() {
   }
 }
 
-Chip8::INS_Fx15() {
+void Chip8::INS_Fx15() {
   uint8_t Vx = (opcode & 0x0F00u) >> 8u;
   DT = V[Vx];
 }
 
-Chip8::INS_Fx18() {
+void Chip8::INS_Fx18() {
   uint8_t Vx = (opcode & 0x0F00u) >> 8u;
   ST = V[Vx];
 }
 
-Chip8::INS_Fx1E() {
+void Chip8::INS_Fx1E() {
   uint8_t Vx = (opcode & 0x0F00u) >> 8u;
   I += V[Vx];
 }
 
-Chip8::INS_Fx29() {
+void Chip8::INS_Fx29() {
   uint8_t Vx = (opcode & 0x0F00u) >> 8u;
   uint8_t digit = V[Vx];
   I = FONT_START_ADDRESS + (5 * digit);
 }
 
-Chip8::INS_Fx33() {
+void Chip8::INS_Fx33() {
   uint8_t Vx = (opcode & 0x0F00u) >> 8u;
   uint8_t value = V[Vx];
 
@@ -311,14 +396,14 @@ Chip8::INS_Fx33() {
   memory[I] = value % 10;
 }
 
-Chip8::INS_Fx55() {
+void Chip8::INS_Fx55() {
   uint8_t Vx = (opcode & 0x0F00u) >> 8u;
   for (uint8_t i = 0; i <= Vx; ++i) {
     memory[I +i] = V[i];
   }
 }
 
-Chip8::INS_Fx65() {
+void Chip8::INS_Fx65() {
   uint8_t Vx = (opcode & 0x0F00u) >> 8u;
   for (uint8_t i = 0; i <= Vx; ++i) {
     V[i] = memory[I +i];

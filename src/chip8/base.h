@@ -58,7 +58,12 @@ public:
   void load_rom(const char* filename);
   void cycle();
 
+  void table0();
+  void table8();
+  void tablee();
+  void tablef();
   // instructions
+  void INS_NULL();
   void INS_00E0(); // CLS
   void INS_00EE(); // RET
   void INS_1nnn(); // JP addr
@@ -93,6 +98,13 @@ public:
   void INS_Fx33(); // store BCD rep of Vx in mem locations I, I+1, and I+2
   void INS_Fx55(); // store reg V0-VF at loc I
   void INS_Fx65(); // read reg V0-Vf at loc I
+
+  typedef void (Chip8::*chip8_function)();
+  chip8_function table[0xF + 1];
+  chip8_function table0[0xE + 1];
+  chip8_function table8[0xE + 1];
+  chip8_function tablee[0xE + 1];
+  chip8_function tablef[0x65 + 1];
 };
 
 #endif
