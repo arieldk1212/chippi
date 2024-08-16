@@ -1,4 +1,5 @@
 #include "imgui.h"
+#include "chip8/base.h"
 #include "display/sdl.h"
 #include "imgui_impl_sdl2.h"
 #include "imgui_impl_opengl2.h"
@@ -10,7 +11,7 @@ const int HEIGHT = 480;
 // Flags for The Screen -> in display.h
 extern Uint32 flags;
 
-int main(){
+int main(int argc, char *argv[]){
 
   // SDL Basic Setup 
   SDL_Window *window;
@@ -28,20 +29,206 @@ int main(){
   ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
   ImGui_ImplOpenGL2_Init();
 
+  int cycle_delay = std::stoi(argv[2]);
+  const char* rom_filename = argv[3];
+  Chip8 chip8;
+  chip8.load_rom(rom_filename);
+
+  int video_pitch = sizeof(chip8.display) * DISPLAY_WIDTH;
+
+  auto last_cycle_time = std::chrono::high_resolution_clock::now();
+
   // Main Loop
   bool done = false;
   while(!done) {
-
     SDL_Event e;
     while(SDL_PollEvent(&e)) {
       ImGui_ImplSDL2_ProcessEvent(&e);
-      if (e.type == SDL_QUIT)
-        done = true;
-      if (e.type == SDL_WINDOWEVENT && e.window.event == SDL_WINDOWEVENT_CLOSE && 
-          e.window.windowID == SDL_GetWindowID(window))
-        done = true;
+      switch (e.type) {
+        case SDL_QUIT: {
+          done = true;
+        } break;
+        case SDL_KEYDOWN: {
+          switch (e.key.keysym.sym) {
+            case SDLK_ESCAPE:
+						{
+							done = true;
+						} break;
+
+						case SDLK_x:
+						{
+							chip8.key_pad[0] = 1;
+						} break;
+
+						case SDLK_1:
+						{
+							chip8.key_pad[1] = 1;
+						} break;
+
+						case SDLK_2:
+						{
+							chip8.key_pad[2] = 1;
+						} break;
+
+						case SDLK_3:
+						{
+							chip8.key_pad[3] = 1;
+						} break;
+
+						case SDLK_q:
+						{
+							chip8.key_pad[4] = 1;
+						} break;
+
+						case SDLK_w:
+						{
+							chip8.key_pad[5] = 1;
+						} break;
+
+						case SDLK_e:
+						{
+							chip8.key_pad[6] = 1;
+						} break;
+
+						case SDLK_a:
+						{
+							chip8.key_pad[7] = 1;
+						} break;
+
+						case SDLK_s:
+						{
+							chip8.key_pad[8] = 1;
+						} break;
+
+						case SDLK_d:
+						{
+							chip8.key_pad[9] = 1;
+						} break;
+
+						case SDLK_z:
+						{
+							chip8.key_pad[0xA] = 1;
+						} break;
+
+						case SDLK_c:
+						{
+							chip8.key_pad[0xB] = 1;
+						} break;
+
+						case SDLK_4:
+						{
+							chip8.key_pad[0xC] = 1;
+						} break;
+
+						case SDLK_r:
+						{
+							chip8.key_pad[0xD] = 1;
+						} break;
+
+						case SDLK_f:
+						{
+							chip8.key_pad[0xE] = 1;
+						} break;
+
+						case SDLK_v:
+						{
+							chip8.key_pad[0xF] = 1;
+						} break;
+          }
+        } break;
+        case SDL_KEYUP: {
+          switch (e.key.keysym.sym) {
+            case SDLK_x:
+						{
+							chip8.key_pad[0] = 0;
+						} break;
+
+						case SDLK_1:
+						{
+							chip8.key_pad[1] = 0;
+						} break;
+
+						case SDLK_2:
+						{
+							chip8.key_pad[2] = 0;
+						} break;
+
+						case SDLK_3:
+						{
+							chip8.key_pad[3] = 0;
+						} break;
+
+						case SDLK_q:
+						{
+							chip8.key_pad[4] = 0;
+						} break;
+
+						case SDLK_w:
+						{
+							chip8.key_pad[5] = 0;
+						} break;
+
+						case SDLK_e:
+						{
+							chip8.key_pad[6] = 0;
+						} break;
+
+						case SDLK_a:
+						{
+							chip8.key_pad[7] = 0;
+						} break;
+
+						case SDLK_s:
+						{
+							chip8.key_pad[8] = 0;
+						} break;
+
+						case SDLK_d:
+						{
+							chip8.key_pad[9] = 0;
+						} break;
+
+						case SDLK_z:
+						{
+							chip8.key_pad[0xA] = 0;
+						} break;
+
+						case SDLK_c:
+						{
+							chip8.key_pad[0xB] = 0;
+						} break;
+
+						case SDLK_4:
+						{
+							chip8.key_pad[0xC] = 0;
+						} break;
+
+						case SDLK_r:
+						{
+							chip8.key_pad[0xD] = 0;
+						} break;
+
+						case SDLK_f:
+						{
+							chip8.key_pad[0xE] = 0;
+						} break;
+
+						case SDLK_v:
+						{
+							chip8.key_pad[0xF] = 0;
+						} break;
+          }
+        } break;
+      }
     }
     
+    auto current_time = std::chrono::high_resolution_clock::now();
+		float dt = std::chrono::duration<float, std::chrono::milliseconds::period>(current_time - last_cycle_time).count();
+
+    if (dt > cycle_delay) {
+      last_cycle_time = current_time;
+      chip8.cycle();
+    }
 
     ImGui_ImplOpenGL2_NewFrame();
     ImGui_ImplSDL2_NewFrame();
